@@ -1,0 +1,71 @@
+<div class="main">
+  <form [formGroup]="depositForm" class="deposit" (ngSubmit)="onSubmit(depositForm.value)">
+    <mat-form-field>
+      <mat-label>Выберите тип депозита</mat-label>
+      <mat-select formControlName="depositName" [(ngModel)]="selectedDeposit"
+                  (selectionChange)="onDepositNameChange()">
+        <mat-option *ngFor="let dep of deposits$ | async" [value]="dep.code">
+          {{dep.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="selectedDeposit">
+      <mat-label>Введите срок вклада (дни)</mat-label>
+      <input matInput type="number" formControlName="depositPeriod"
+             [(ngModel)]="depositPeriod">
+      <mat-error *ngIf="hasError('depositPeriod', 'min')">
+        Срок не должен быть меньше {{periodStarts}}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="selectedDeposit">
+      <mat-label>Введите сумму вклада</mat-label>
+      <input matInput type="number" formControlName="depositSum"
+             [(ngModel)]="depositSum">
+      <mat-error *ngIf="hasError('depositSum', 'min')">
+        Сумма не должна быть меньше {{sumStarts}}
+      </mat-error>
+    </mat-form-field>
+    <button class="button" mat-raised-button color="primary" type="submit" [disabled]="!depositForm.valid || !depositPeriod || !depositSum">Рассчитать</button>
+  </form>
+  <div class="rate" *ngIf="submitted">
+    <div class="rate-calculated">
+      <div>
+        <span class="rate-info"> Процентная ставка: </span>
+        <span class="rate-number">{{currentRate}}</span>
+      </div>
+      <div>
+        <span class="rate-info">Доход: </span>
+        <span class="rate-number">{{income}} руб.</span>
+      </div>
+    </div>
+    <div>
+      <button class="button" mat-stroked-button color="primary" (click)="print()">Распечатать PDF</button>
+    </div>
+  </div>
+</div>
+<div class="print">
+  <div class="content">
+    <div class="content-row">
+      <span>Тип депозита: </span>
+      <span>{{depositName}}</span>
+    </div>
+    <div class="content-row">
+      <span>Срок: </span>
+      <span>{{depositPeriod}}</span>
+    </div>
+    <div class="content-row">
+      <span>Сумма: </span>
+      <span>{{depositSum}}</span>
+    </div>
+    <div class="content-row">
+      <span>Процентная ставка: </span>
+      <span>{{currentRate}}</span>
+    </div>
+    <div class="content-row">
+      <span>Доход: </span>
+      <span>{{income}}</span>
+    </div>
+  </div>
+</div>
