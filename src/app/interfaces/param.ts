@@ -1,4 +1,4 @@
-import {SummsAndRate} from "./summs_and_rate";
+import {SummsAndRate} from "./summsAndRate";
 
 export interface Param {
   period_from: number;

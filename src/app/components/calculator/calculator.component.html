@@ -1,5 +1,5 @@
 <div class="main">
-  <form [formGroup]="depositForm" class="deposit" (ngSubmit)="onSubmit(depositForm.value)">
+  <form [formGroup]="depositForm" class="deposit" (ngSubmit)="calculateRevenue(depositForm.value)">
     <mat-form-field>
       <mat-label>Выберите тип депозита</mat-label>
       <mat-select formControlName="depositName" [(ngModel)]="selectedDeposit"
@@ -37,7 +37,7 @@
       </div>
       <div>
         <span class="rate-info">Доход: </span>
-        <span class="rate-number">{{income}} руб.</span>
+        <span class="rate-number">{{revenue}} руб.</span>
       </div>
     </div>
     <div>
@@ -57,7 +57,7 @@
     </div>
     <div class="content-row">
       <span>Сумма: </span>
-      <span>{{depositSum}}</span>
+      <span>{{depositSum}} руб.</span>
     </div>
     <div class="content-row">
       <span>Процентная ставка: </span>
@@ -65,7 +65,7 @@
     </div>
     <div class="content-row">
       <span>Доход: </span>
-      <span>{{income}}</span>
+      <span>{{revenue}} руб.</span>
     </div>
   </div>
 </div>

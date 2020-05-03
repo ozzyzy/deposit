@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import {DepositService} from "../services/deposit.service";
-import {Deposit} from "../interfaces/deposit";
 import {Observable} from "rxjs";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {Param} from "../interfaces/param";
-import {DepositFormValue} from "../interfaces/depositFormValue";
+import {Deposit} from "../../interfaces/deposit";
+import {DepositService} from "../../services/deposit.service";
+import {Param} from "../../interfaces/param";
+import {DepositFormValue} from "../../interfaces/depositFormValue";
 
 @Component({
   selector: 'app-calculator',
   templateUrl: './calculator.component.html',
-  styleUrls: ['./calculator.component.css']
+  styleUrls: ['./calculator.component.scss']
 })
 export class CalculatorComponent implements OnInit {
   public deposits$: Observable<Deposit[]>;
@@ -23,7 +23,7 @@ export class CalculatorComponent implements OnInit {
   public sumStarts: number;
   public currentRate: number;
   public submitted: boolean = false;
-  public income: string;
+  public revenue: string;
 
   depositForm: FormGroup = new FormGroup({
     depositName: new FormControl('', [
@@ -44,10 +44,6 @@ export class CalculatorComponent implements OnInit {
   constructor(private depositService: DepositService) { }
 
   ngOnInit(): void {
-    this.getDeposits();
-  }
-
-  getDeposits(): void {
     this.deposits$ =  this.depositService.getDepositsData();
     this.deposits$.subscribe(data => this.deposits = data);
   }
@@ -63,12 +59,12 @@ export class CalculatorComponent implements OnInit {
     this.depositForm.controls['depositSum'].updateValueAndValidity();
   }
 
-  onSubmit(value: DepositFormValue): void {
+  calculateRevenue(value: DepositFormValue): void {
     const periodsArray: number[] = [];
     const sumsArray: number[] = [];
     const currentPeriod = {};
     this.currentDeposit.param.forEach((p: Param) => periodsArray.push(p.period_from));
-    for (let i = 0; i < periodsArray.length; i++) {
+    for (let i = 0; i < periodsArray.length; i++) {   //looking for matching periods
       if ((value.depositPeriod >= periodsArray[i] && value.depositPeriod < periodsArray[i+1]) ||
         (value.depositPeriod >= periodsArray[i] && !periodsArray[i+1])) {
         Object.assign(currentPeriod, this.currentDeposit.param.find(p => p.period_from === periodsArray[i]));
@@ -76,14 +72,14 @@ export class CalculatorComponent implements OnInit {
     }
 
     currentPeriod['summs_and_rate'].forEach(s => sumsArray.push(s.summ_from));
-    for (let i = 0; i < sumsArray.length; i++) {
+    for (let i = 0; i < sumsArray.length; i++) {   //looking for matching sums & rate
       if ((value.depositSum >= sumsArray[i] && value.depositSum < sumsArray[i+1]) ||
         (value.depositSum >=sumsArray[i] && !sumsArray[i+1])) {
         this.currentRate = currentPeriod['summs_and_rate'].find(s => s.summ_from === sumsArray[i]).rate;
       }
     }
 
-    this.income = ((value.depositSum * (this.currentRate / 100) * value.depositPeriod) / 365).toFixed(2);
+    this.revenue = ((value.depositSum * (this.currentRate / 100) * value.depositPeriod) / 365).toFixed(2);
     this.submitted = true;
   }
 
