@@ -15,10 +15,11 @@ export class CalculatorComponent implements OnInit {
   public deposits$: Observable<Deposit[]>;
   public deposits: Deposit[] = [];
   public currentDeposit: Deposit;
+  private currentPeriod = {};
   public selectedDeposit: string;
   public depositName: string;
-  public depositSum: null;
-  public depositPeriod: null;
+  public depositSum: number;
+  public depositPeriod: number;
   public periodStarts: number;
   public sumStarts: number;
   public currentRate: number;
@@ -49,33 +50,45 @@ export class CalculatorComponent implements OnInit {
   }
 
   onDepositNameChange(): void {
+    const sumsArray: number[] = [];
     this.currentDeposit = this.deposits.find((d: Deposit) => d.code === this.selectedDeposit);
     this.depositName = this.currentDeposit.name;
     this.periodStarts = this.currentDeposit.param[0].period_from;
-    this.sumStarts = this.currentDeposit.param.find((p: Param) => p.period_from === this.periodStarts).summs_and_rate[0].summ_from;
+    this.currentDeposit.param.forEach(p => sumsArray.push(p.summs_and_rate[0].summ_from));
+    this.sumStarts = Math.min(...sumsArray);
     this.depositForm.controls['depositPeriod'].setValidators([Validators.min(this.periodStarts)]);
     this.depositForm.controls['depositSum'].setValidators([Validators.min(this.sumStarts)]);
     this.depositForm.controls['depositPeriod'].updateValueAndValidity();
     this.depositForm.controls['depositSum'].updateValueAndValidity();
   }
 
-  calculateRevenue(value: DepositFormValue): void {
+  findCurrentPeriod(deposit: Deposit): Param {
     const periodsArray: number[] = [];
-    const sumsArray: number[] = [];
-    const currentPeriod = {};
-    this.currentDeposit.param.forEach((p: Param) => periodsArray.push(p.period_from));
-    for (let i = 0; i < periodsArray.length; i++) {   //looking for matching periods
-      if ((value.depositPeriod >= periodsArray[i] && value.depositPeriod < periodsArray[i+1]) ||
-        (value.depositPeriod >= periodsArray[i] && !periodsArray[i+1])) {
-        Object.assign(currentPeriod, this.currentDeposit.param.find(p => p.period_from === periodsArray[i]));
+    deposit.param.forEach((p: Param) => periodsArray.push(p.period_from));
+    for (let i = 0; i < periodsArray.length; i++) {
+      if ((this.depositPeriod >= periodsArray[i] && this.depositPeriod < periodsArray[i + 1]) ||
+        (this.depositPeriod >= periodsArray[i] && !periodsArray[i + 1])) {
+        return this.currentPeriod = deposit.param.find(p => p.period_from === periodsArray[i]);
       }
     }
+  }
 
-    currentPeriod['summs_and_rate'].forEach(s => sumsArray.push(s.summ_from));
+  onPeriodChange(): void {
+    this.findCurrentPeriod(this.currentDeposit);
+    if (Object.values(this.currentPeriod).length) {
+      this.sumStarts = this.currentPeriod['summs_and_rate'][0].summ_from;
+    }
+  }
+
+  calculateRevenue(value: DepositFormValue): void {
+    const sumsArray: number[] = [];
+    this.findCurrentPeriod(this.currentDeposit);
+
+    this.currentPeriod['summs_and_rate'].forEach(s => sumsArray.push(s.summ_from));
     for (let i = 0; i < sumsArray.length; i++) {   //looking for matching sums & rate
       if ((value.depositSum >= sumsArray[i] && value.depositSum < sumsArray[i+1]) ||
         (value.depositSum >=sumsArray[i] && !sumsArray[i+1])) {
-        this.currentRate = currentPeriod['summs_and_rate'].find(s => s.summ_from === sumsArray[i]).rate;
+        this.currentRate = this.currentPeriod['summs_and_rate'].find(s => s.summ_from === sumsArray[i]).rate;
       }
     }
 

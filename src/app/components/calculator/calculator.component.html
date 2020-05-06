@@ -13,7 +13,8 @@
     <mat-form-field *ngIf="selectedDeposit">
       <mat-label>Введите срок вклада (дни)</mat-label>
       <input matInput type="number" formControlName="depositPeriod"
-             [(ngModel)]="depositPeriod">
+             [(ngModel)]="depositPeriod"
+             (change)="onPeriodChange()">
       <mat-error *ngIf="hasError('depositPeriod', 'min')">
         Срок не должен быть меньше {{periodStarts}}
       </mat-error>
@@ -33,7 +34,7 @@
     <div class="rate-calculated">
       <div>
         <span class="rate-info"> Процентная ставка: </span>
-        <span class="rate-number">{{currentRate}}</span>
+        <span class="rate-number">{{currentRate}} %</span>
       </div>
       <div>
         <span class="rate-info">Доход: </span>
@@ -61,7 +62,7 @@
     </div>
     <div class="content-row">
       <span>Процентная ставка: </span>
-      <span>{{currentRate}}</span>
+      <span>{{currentRate}} %</span>
     </div>
     <div class="content-row">
       <span>Доход: </span>
